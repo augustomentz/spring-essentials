@@ -1,40 +1,44 @@
 package spring.essentials.course.springessentials.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import spring.essentials.course.springessentials.domain.Time;
+import spring.essentials.course.springessentials.mapper.TimeMapper;
 import spring.essentials.course.springessentials.repository.TimeRepository;
+import spring.essentials.course.springessentials.requests.TimePostRequestBody;
+import spring.essentials.course.springessentials.requests.TimePutRequestBody;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
-public class TimeService implements TimeRepository {
-    static List<Time> times;
-
-    static {
-        times = new ArrayList<>(List.of(new Time(1L, "Grêmio"), new Time(2L, "Flamengo")));
-    }
+@RequiredArgsConstructor
+public class TimeService {
+    private final TimeRepository timeRepository;
 
     public List<Time> listAll() {
-        return times;
+        return timeRepository.findAll();
     }
 
-    public Time findById(long id) {
-        return times
-                .stream()
-                .filter(time -> time.getId().equals((id)))
-                .findFirst()
+    public Time findByIdOrThrowBadRequestException(long id) {
+        return timeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Time not found"));
     }
 
-    public Time save(Time time) {
-        time.setId(ThreadLocalRandom.current().nextLong(3, 100000));
+    public Time save(TimePostRequestBody timePostRequestBody) {
+        return timeRepository.save(TimeMapper.INSTANCE.toTime(timePostRequestBody));
+    }
 
-        times.add(time);
+    public void delete(long id) {
+        timeRepository.delete(findByIdOrThrowBadRequestException(id));
+    }
 
-        return time;
+    public void replace(TimePutRequestBody timePutRequestBody) {
+        Time savedTime = findByIdOrThrowBadRequestException(timePutRequestBody.getId());
+        Time time = TimeMapper.INSTANCE.toTime(timePutRequestBody);
+        time.setId(savedTime.getId());
+
+        timeRepository.save(time);
     }
 }
