@@ -23,6 +23,10 @@ public class TimeService {
         return timeRepository.findAll(pageable);
     }
 
+    public List<Time> listAllNonPageable() {
+        return  this.timeRepository.findAll();
+    }
+
     public List<Time> findByName(String name) {
         return timeRepository.findByName(name);
     }

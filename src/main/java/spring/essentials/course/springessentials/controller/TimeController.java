@@ -30,6 +30,11 @@ public class TimeController {
         return ResponseEntity.ok(timeService.listAll(pageable));
     }
 
+    @GetMapping(path = "/all")
+    public ResponseEntity<List<Time>> listAll() {
+        return ResponseEntity.ok(timeService.listAllNonPageable());
+    }
+
     @GetMapping(path = "/{id}")
     public ResponseEntity<Time> findById(@PathVariable long id) {
         return ResponseEntity.ok(timeService.findByIdOrThrowBadRequestException(id));
